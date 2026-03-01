@@ -1,9 +1,9 @@
 # Fixed-Assignment
 fixing my repos
 Badge for assignment3:
-[![C++ Unit Tests](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/cpp-test.yml/badge.svg)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/cpp-test.yml)
+[![C++ Unit Tests](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml/badge.svg)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml)
 
-Badge for assignment4: [![C++ Unit Tests](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/cpp-test.yml/badge.svg?branch=A4&event=push)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/cpp-test.yml) 
+Badge for assignment4: [![C++ Unit Tests](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml/badge.svg?branch=A4&event=push)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml) 
 
 # Assignment1
 guess I will follow this and then figure out how to do a video? Making structs and enums to fit my program idea of a Dojo
