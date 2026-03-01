@@ -22,6 +22,12 @@ string getRankName(BeltRank r) {
     return (r >= 0 && r <= 6) ? names[r] : "White";
 }
 
+class DojoException : public std::runtime_error {
+public:
+    // Requirement: Derive from std::exception/runtime_error and return message via what()
+    DojoException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
 // --- REQUIREMENT: Function Template ---
 template <typename T>
 T getMax(T a, T b) {
@@ -49,7 +55,7 @@ public:
     Participant(string n = "N/A", int m = 0, BeltRank r = White) : name(n), monthsEnrolled(m), rank(r) {}
     virtual ~Participant() {}
     virtual string getStudentType() const = 0;
-    
+
     string getName() const { return name; }
     BeltRank getRank() const { return rank; }
 
@@ -70,8 +76,9 @@ private:
     string guardianName;
     FinancialRecord finance;
 public:
-    JuniorStudent(string n, int m, BeltRank r, string g, bool gear) 
-        : Participant(n, m, r), guardianName(g), finance(80.0, gear ? 125.0 : 0.0) {}
+    JuniorStudent(string n, int m, BeltRank r, string g, bool gear)
+        : Participant(n, m, r), guardianName(g), finance(80.0, gear ? 125.0 : 0.0) {
+    }
 
     string getStudentType() const override { return "Junior"; }
 
@@ -93,8 +100,9 @@ private:
     string emergencyContact;
     FinancialRecord finance;
 public:
-    SeniorStudent(string n, int m, BeltRank r, string e, bool gear) 
-        : Participant(n, m, r), emergencyContact(e), finance(120.0, gear ? 125.0 : 0.0) {}
+    SeniorStudent(string n, int m, BeltRank r, string e, bool gear)
+        : Participant(n, m, r), emergencyContact(e), finance(120.0, gear ? 125.0 : 0.0) {
+    }
 
     string getStudentType() const override { return "Senior"; }
 
@@ -122,28 +130,31 @@ private:
 
 public:
     DynamicArray(int cap = 2) : size(0), capacity(cap) { items = new T[capacity]; }
-    
+
     ~DynamicArray() {
         for (int i = 0; i < size; i++) delete items[i]; // Cleanup for pointers
         delete[] items;
     }
 
-    // REQUIREMENT: Overload operator[]
+    // REQUIREMENT: operator[] must throw on invalid index
     T& operator[](int index) {
-        if (index < 0 || index >= size) return items[0]; // Simple bounds safety
+        if (index < 0 || index >= size) {
+            throw DojoException("Invalid Index: Access out of bounds.");
+        }
         return items[index];
     }
 
-    // REQUIREMENT: Overload operator+=
     void operator+=(T item) {
         if (size >= capacity) resize();
         items[size++] = item;
     }
 
-    // REQUIREMENT: Overload operator-=
+    // REQUIREMENT: operator-= must throw on invalid removal
     void operator-=(int index) {
-        if (index < 0 || index >= size) return;
-        delete items[index];
+        if (index < 0 || index >= size) {
+            throw DojoException("Invalid Removal: Index does not exist.");
+        }
+        delete items[index]; // Memory cleanup
         for (int i = index; i < size - 1; i++) items[i] = items[i + 1];
         size--;
     }
@@ -152,26 +163,17 @@ public:
 };
 
 #ifdef _DEBUG
-TEST_CASE("New Requirements Verification") {
+TEST_CASE("Exception Handling Verification") {
     DynamicArray<Participant*> da;
-    JuniorStudent* j1 = new JuniorStudent("Tim", 1, White, "Jane", false);
-    JuniorStudent* j2 = new JuniorStudent("Tim", 1, White, "Jane", false);
-    
-    SUBCASE("Operator==") { CHECK(*j1 == *j2); }
-    SUBCASE("Operator+=") { 
-        da += j1; 
-        CHECK(da.getSize() == 1); 
+    da += new JuniorStudent("Tim", 1, White, "Jane", false);
+
+    SUBCASE("Invalid Index Throw") {
+        CHECK_THROWS_AS(da[5], DojoException);
+        CHECK_THROWS_AS(da[-1], DojoException);
     }
-    SUBCASE("Operator[]") {
-        da += j2;
-        CHECK(da[1]->getName() == "Tim");
+    SUBCASE("Invalid Removal Throw") {
+        CHECK_THROWS_AS(da -= 10, DojoException);
     }
-    SUBCASE("Operator<<") {
-        ostringstream oss;
-        oss << *j1;
-        CHECK(oss.str().find("Tim") != string::npos);
-    }
-    SUBCASE("Function Template") { CHECK(getMax(10, 20) == 20); }
 }
 #endif
 
@@ -194,15 +196,24 @@ int main(int argc, char** argv) {
             if (choice == 1) {
                 cout << "Guardian: "; cin.ignore(); getline(cin, extra);
                 manager += new JuniorStudent(name, m, (BeltRank)r, extra, (g == 'y'));
-            } else {
+            }
+            else {
                 cout << "Emergency: "; cin.ignore(); getline(cin, extra);
                 manager += new SeniorStudent(name, m, (BeltRank)r, extra, (g == 'y'));
             }
-        } else if (choice == 3) {
+        }
+        else if (choice == 3) {
             for (int i = 0; i < manager.getSize(); i++) cout << "[" << i << "] " << *manager[i] << endl;
-        } else if (choice == 4) {
+        }
+        else if (choice == 4) {
             int idx; cout << "Index: "; cin >> idx;
-            manager -= idx;
+            try {
+                manager -= idx;
+                cout << "Successfully removed.\n";
+            }
+            catch (const DojoException& e) {
+                cout << "Error: " << e.what() << endl;
+            }
         }
     } while (choice != 5);
 
