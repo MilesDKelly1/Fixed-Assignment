@@ -3,7 +3,7 @@ fixing my repos
 Badge for assignment3:
 [![C++ Unit Tests](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml/badge.svg)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml)
 
-Badge for assignment4: [![C++ Unit Tests](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml/badge.svg?branch=main&event=push)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml) 
+Badge for assignment4: [![CodeQL Advanced](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml/badge.svg?branch=main&event=public)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml)
 
 Badge for assignment7: [![CodeQL Advanced](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml/badge.svg?branch=MilesDKelly1-patch-1&event=delete)](https://github.com/MilesDKelly1/Fixed-Assignment/actions/workflows/codeql.yml)
 
