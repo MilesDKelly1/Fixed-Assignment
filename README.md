@@ -45,3 +45,7 @@ oh no we are messing with Classes. I dont like Test_Cases. Guess this textbook w
 -started a brand new repo to have a clean slate to move my previous assignments into main.cpp
 
 - Now to read through Assignment 7
+
+- Wrote out my code on Visual Studio 2022, created my throw expressions, and set up my try/catch block
+
+- Wrote out my note page for what I need to "Why" and explaining what I did
