@@ -40,12 +40,23 @@ oh no we are messing with Classes. I dont like Test_Cases. Guess this textbook w
 -Record
 
 # Assignment 7
--Read Chap14 and did a test run of the quiz (38/40)
+-Read Chap14 and did a test run of the quiz
 
 -started a brand new repo to have a clean slate to move my previous assignments into main.cpp
 
 - Now to read through Assignment 7
-
+  
 - Wrote out my code on Visual Studio 2022, created my throw expressions, and set up my try/catch block
 
 - Wrote out my note page for what I need to "Why" and explaining what I did
+
+# Assignment 8
+-Read Chap15 Recursion
+
+-Not the biggest fan of Recursion chapters but that is fine
+
+-write the code because all that is needed is a recursion method, new or rewritten method
+
+-add the code from VS to main.cpp
+
+-
