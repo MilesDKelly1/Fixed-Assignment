@@ -55,8 +55,8 @@ oh no we are messing with Classes. I dont like Test_Cases. Guess this textbook w
 
 -Not the biggest fan of Recursion chapters but that is fine
 
--write the code because all that is needed is a recursion method, new or rewritten method
+-write the code because all that is needed is a recursion method, new or rewritten method (this and above were done through 3/2-3/6)
 
--add the code from VS to main.cpp
+-add the code from VS to main.cpp (will do 3/8, it is currently 8:30pm on 3/7 I finished the code yesterday/March 6th. I am currently exhausted from doctor appointments and moving furniture out of an apartment to be stored elsewhere.)
 
--
+-Record
