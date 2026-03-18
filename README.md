@@ -60,3 +60,10 @@ oh no we are messing with Classes. I dont like Test_Cases. Guess this textbook w
 -add the code from VS to main.cpp (will do 3/8, it is currently 8:30pm on 3/7 I finished the code yesterday/March 6th. I am currently exhausted from doctor appointments and moving furniture out of an apartment to be stored elsewhere.)
 
 -Record
+
+# Assignment 9
+-Read Chap16
+
+-took quiz twice (3/17), might try again on a different day
+
+-Started working on the code for this week's assignment (3/18)
