@@ -67,3 +67,7 @@ oh no we are messing with Classes. I dont like Test_Cases. Guess this textbook w
 -took quiz twice (3/17), might try again on a different day
 
 -Started working on the code for this week's assignment (3/18)
+
+-Started writing notes for the diff code (3/20)
+
+-Recording time (3/22)
