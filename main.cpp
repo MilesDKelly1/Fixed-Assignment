@@ -6,12 +6,11 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <vector>    // NEW: Required for std::vector
+#include <algorithm> // For std::swap
 
-#define _DEBUG
-#ifdef _DEBUG
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
-#endif
 
 using namespace std;
 
@@ -24,11 +23,10 @@ string getRankName(BeltRank r) {
 
 class DojoException : public std::runtime_error {
 public:
-    //create memory leak
     DojoException(const std::string& msg) : std::runtime_error(msg) {}
 };
 
-// --- Composition & Base Classes (Unchanged) ---
+// --- FinancialRecord (Unchanged) ---
 class FinancialRecord {
 private:
     double baseRate;
@@ -39,6 +37,7 @@ public:
     double calculateTotal() const { return (baseRate + gearCost) * (1.0 + taxRate); }
 };
 
+// --- Participant Base (Unchanged) ---
 class Participant {
 protected:
     int monthsEnrolled;
@@ -89,80 +88,115 @@ public:
     }
 };
 
-// --- TEMPLATE CLASS (Modified for Recursion) ---
+// --- TEMPLATE CLASS (UPGRADED FOR WEEK 09) ---
 template <typename T>
 class DynamicArray {
 private:
-    T* items;
-    int size;
-    int capacity;
-
-    void resize() {
-        capacity *= 2;
-        T* newItems = new T[capacity];
-        for (int i = 0; i < size; i++) newItems[i] = items[i];
-        delete[] items;
-        this->items = newItems;
-    }
+    // Requirement: Replace raw array with std::vector
+    std::vector<T> items;
 
 public:
-    DynamicArray(int cap = 2) : size(0), capacity(cap) {
-        items = new T[capacity];
-    }
+    DynamicArray() {}
+
+    // Requirement: Cleanup manual pointers inside the vector
     ~DynamicArray() {
-        for (int i = 0; i < size; i++) delete items[i];
-        delete[] items;
+        for (size_t i = 0; i < items.size(); i++) {
+            delete items.at(i);
+        }
+        items.clear();
     }
 
-    // NEW RECURSIVE MEMBER FUNCTION
-    int findIndexRecursive(string target, int index = 0) const {
-        // BASE CASE 1: Not found
-        if (index >= size) return -1;
-        // BASE CASE 2: Found
-        if (items[index]->getName() == target) return index;
-        // RECURSIVE CASE: Next index
-        return findIndexRecursive(target, index + 1);
+    // Requirement: Use .push_back()
+    void operator+=(T item) {
+        items.push_back(item);
+    }
+
+    // Requirement: Use .at() and .erase()
+    void operator-=(int index) {
+        if (index < 0 || index >= static_cast<int>(items.size()))
+            throw DojoException("Invalid Removal Index.");
+
+        delete items.at(index);
+        items.erase(items.begin() + index);
     }
 
     T& operator[](int index) {
-        if (index < 0 || index >= size) throw DojoException("Invalid Index.");
-        return items[index];
+        if (index < 0 || index >= static_cast<int>(items.size()))
+            throw DojoException("Invalid Index Access.");
+        return items.at(index);
     }
 
-    void operator+=(T item) {
-        if (size >= capacity) resize();
-        items[size++] = item;
+    int getSize() const { return static_cast<int>(items.size()); }
+
+    // Requirement: Sequential (Linear) Search (Manual implementation)
+    int sequentialSearch(string target) const {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.at(i)->getName() == target) return i;
+        }
+        return -1;
     }
 
-    void operator-=(int index) {
-        if (index < 0 || index >= size) throw DojoException("Invalid Removal.");
-        delete items[index];
-        for (int i = index; i < size - 1; i++) items[i] = items[i + 1];
-        size--;
+    // Requirement: Sorting Algorithm (Bubble Sort - Manual implementation)
+    void bubbleSort() {
+        if (items.empty()) return;
+        for (size_t i = 0; i < items.size() - 1; i++) {
+            for (size_t j = 0; j < items.size() - i - 1; j++) {
+                if (items.at(j)->getName() > items.at(j + 1)->getName()) {
+                    std::swap(items.at(j), items.at(j + 1));
+                }
+            }
+        }
     }
 
-    int getSize() const { return size; }
+    // Requirement: Binary Search (Manual implementation using low/mid/high)
+    int binarySearch(string target) {
+        // Requirement: Must be sorted first
+        bubbleSort();
+
+        int low = 0;
+        int high = static_cast<int>(items.size()) - 1;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (items.at(mid)->getName() == target) return mid;
+
+            if (items.at(mid)->getName() < target)
+                low = mid + 1;
+            else
+                high = mid - 1;
+        }
+        return -1;
+    }
 };
 
+// --- Updated Doctests ---
 #ifdef _DEBUG
-TEST_CASE("Assignment 8: Recursion Verification") {
+TEST_CASE("Assignment 9: Search and Sort Verification") {
     DynamicArray<Participant*> da;
-    da += new JuniorStudent("Tim", 1, White, "Jane", false);
-    da += new SeniorStudent("Sarah", 5, Blue, "Bob", true);
+    da += new SeniorStudent("Zelda", 5, Blue, "Contact1", true);
+    da += new JuniorStudent("Alice", 1, White, "Guardian1", false);
 
-    SUBCASE("Recursive Search Finds Target") {
-        CHECK(da.findIndexRecursive("Sarah") == 1);
-        CHECK(da.findIndexRecursive("Tim") == 0);
+    SUBCASE("Linear Search finds Alice at index 1") {
+        CHECK(da.sequentialSearch("Alice") == 1);
     }
-    SUBCASE("Recursive Search Returns -1 for Missing") {
-        CHECK(da.findIndexRecursive("Missing") == -1);
+
+    SUBCASE("Binary Search sorts and finds Zelda") {
+        // Binary search will call bubbleSort first
+        int result = da.binarySearch("Zelda");
+        CHECK(result == 1); // After sorting: Alice[0], Zelda[1]
+        CHECK(da[0]->getName() == "Alice");
+    }
+
+    SUBCASE("Search returns -1 for missing element") {
+        CHECK(da.sequentialSearch("Missing") == -1);
+        CHECK(da.binarySearch("Missing") == -1);
     }
 }
 #endif
 
 int main(int argc, char** argv) {
-    //memory leak going to the output window
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 #ifdef _DEBUG
     doctest::Context context;
     context.applyCommandLine(argc, argv);
@@ -174,7 +208,9 @@ int main(int argc, char** argv) {
     int choice;
 
     do {
-        cout << "\n1. Add Junior\n2. Add Senior\n3. View\n4. Remove\n5. Search (Recursive)\n6. Exit\nSelection: ";
+        cout << "\n--- Dojo Management (Week 09) ---" << endl;
+        cout << "1. Add Junior\n2. Add Senior\n3. View All\n4. Remove Student\n"
+            << "5. Linear Search\n6. Sort (Bubble)\n7. Binary Search\n8. Exit\nSelection: ";
         cin >> choice;
 
         if (choice == 1 || choice == 2) {
@@ -196,17 +232,28 @@ int main(int argc, char** argv) {
             for (int i = 0; i < manager.getSize(); i++) cout << "[" << i << "] " << *manager[i] << endl;
         }
         else if (choice == 4) {
-            int idx; cout << "Index: "; cin >> idx;
-            try { manager -= idx; cout << "Removed.\n"; }
+            int idx; cout << "Enter index to remove: "; cin >> idx;
+            try { manager -= idx; cout << "Student removed.\n"; }
             catch (const DojoException& e) { cout << e.what() << endl; }
         }
         else if (choice == 5) {
-            string sName; cout << "Enter name: "; cin.ignore(); getline(cin, sName);
-            int idx = manager.findIndexRecursive(sName);
-            if (idx != -1) cout << "Found at index " << idx << ": " << *manager[idx] << endl;
-            else cout << "Not found." << endl;
+            string sName; cout << "Enter name to search: "; cin.ignore(); getline(cin, sName);
+            int idx = manager.sequentialSearch(sName);
+            if (idx != -1) cout << "Found at index " << idx << endl;
+            else cout << "Not found.\n";
         }
-    } while (choice != 6);
+        else if (choice == 6) {
+            manager.bubbleSort();
+            cout << "List sorted alphabetically by name.\n";
+        }
+        else if (choice == 7) {
+            string sName; cout << "Enter name for binary search: "; cin.ignore(); getline(cin, sName);
+            int idx = manager.binarySearch(sName);
+            if (idx != -1) cout << "Found at index " << idx << " (List was auto-sorted)\n";
+            else cout << "Not found.\n";
+        }
+
+    } while (choice != 8);
 
     return 0;
 }
