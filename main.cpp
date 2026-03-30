@@ -6,15 +6,13 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
-#include <vector>    // NEW: Required for std::vector
-#include <algorithm> // For std::swap
 
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
 
 using namespace std;
 
-// --- Enums & Exceptions (Unchanged) ---
+// --- Enums & Exceptions ---
 enum BeltRank { White, Yellow, Green, Blue, Purple, Brown, Black };
 string getRankName(BeltRank r) {
     string names[] = { "White", "Yellow", "Green", "Blue", "Purple", "Brown", "Black" };
@@ -26,7 +24,7 @@ public:
     DojoException(const std::string& msg) : std::runtime_error(msg) {}
 };
 
-// --- FinancialRecord (Unchanged) ---
+// --- FinancialRecord ---
 class FinancialRecord {
 private:
     double baseRate;
@@ -37,7 +35,7 @@ public:
     double calculateTotal() const { return (baseRate + gearCost) * (1.0 + taxRate); }
 };
 
-// --- Participant Base (Unchanged) ---
+// --- Participant Base ---
 class Participant {
 protected:
     int monthsEnrolled;
@@ -57,7 +55,7 @@ public:
     }
 };
 
-// --- Derived Classes (Unchanged) ---
+// --- Derived Classes ---
 class JuniorStudent : public Participant {
 private:
     string guardianName;
@@ -88,108 +86,143 @@ public:
     }
 };
 
-// --- TEMPLATE CLASS (UPGRADED FOR WEEK 09) ---
+// --- WEEK 10: CUSTOM LINKED LIST ADT ---
 template <typename T>
-class DynamicArray {
+class CustomLinkedList {
 private:
-    // Requirement: Replace raw array with std::vector
-    std::vector<T> items;
+    // REQUIREMENT: Node structure
+    struct Node {
+        T data;
+        Node* next;
+    };
+    Node* head;
+    int size;
 
 public:
-    DynamicArray() {}
+    // REQUIREMENT: Linked List Iterator as a class
+    class ListIterator {
+    private:
+        Node* current;
+    public:
+        ListIterator(Node* ptr) : current(ptr) {} // Initialized to front
+        bool isValid() const { return current != nullptr; }
+        void next() { if (current) current = current->next; } // Advancing
+        T& getData() { return current->data; } // Accessing data
+    };
 
-    // Requirement: Cleanup manual pointers inside the vector
-    ~DynamicArray() {
-        for (size_t i = 0; i < items.size(); i++) {
-            delete items.at(i);
+    CustomLinkedList() : head(nullptr), size(0) {}
+
+    // Destructor: Clean up manual memory to avoid leaks
+    ~CustomLinkedList() {
+        while (head) {
+            Node* temp = head;
+            head = head->next;
+            delete temp->data; // Delete actual Student object
+            delete temp;       // Delete Node container
         }
-        items.clear();
     }
 
-    // Requirement: Use .push_back()
-    void operator+=(T item) {
-        items.push_back(item);
-    }
-
-    // Requirement: Use .at() and .erase()
-    void operator-=(int index) {
-        if (index < 0 || index >= static_cast<int>(items.size()))
-            throw DojoException("Invalid Removal Index.");
-
-        delete items.at(index);
-        items.erase(items.begin() + index);
-    }
-
-    T& operator[](int index) {
-        if (index < 0 || index >= static_cast<int>(items.size()))
-            throw DojoException("Invalid Index Access.");
-        return items.at(index);
-    }
-
-    int getSize() const { return static_cast<int>(items.size()); }
-
-    // Requirement: Sequential (Linear) Search (Manual implementation)
-    int sequentialSearch(string target) const {
-        for (int i = 0; i < items.size(); i++) {
-            if (items.at(i)->getName() == target) return i;
+    // REQUIREMENT: Ordered Insert (Maintains sorted order by Name)
+    void insert(T item) {
+        Node* newNode = new Node{ item, nullptr };
+        if (!head || item->getName() < head->data->getName()) {
+            newNode->next = head;
+            head = newNode;
         }
-        return -1;
-    }
-
-    // Requirement: Sorting Algorithm (Bubble Sort - Manual implementation)
-    void bubbleSort() {
-        if (items.empty()) return;
-        for (size_t i = 0; i < items.size() - 1; i++) {
-            for (size_t j = 0; j < items.size() - i - 1; j++) {
-                if (items.at(j)->getName() > items.at(j + 1)->getName()) {
-                    std::swap(items.at(j), items.at(j + 1));
-                }
+        else {
+            Node* curr = head;
+            while (curr->next && curr->next->data->getName() < item->getName()) {
+                curr = curr->next;
             }
+            newNode->next = curr->next;
+            curr->next = newNode;
         }
+        size++;
     }
 
-    // Requirement: Binary Search (Manual implementation using low/mid/high)
-    int binarySearch(string target) {
-        // Requirement: Must be sorted first
-        bubbleSort();
+    // REQUIREMENT: Delete node by index
+    void remove(int index) {
+        if (index < 0 || index >= size) throw DojoException("Invalid Index.");
+        Node* temp;
+        if (index == 0) {
+            temp = head;
+            head = head->next;
+        }
+        else {
+            Node* curr = head;
+            for (int i = 0; i < index - 1; i++) curr = curr->next;
+            temp = curr->next;
+            curr->next = temp->next;
+        }
+        delete temp->data;
+        delete temp;
+        size--;
+    }
 
-        int low = 0;
-        int high = static_cast<int>(items.size()) - 1;
-
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (items.at(mid)->getName() == target) return mid;
-
-            if (items.at(mid)->getName() < target)
-                low = mid + 1;
-            else
-                high = mid - 1;
+    // REQUIREMENT: Search (Sequential)
+    int search(string name) const {
+        Node* curr = head;
+        int idx = 0;
+        while (curr) {
+            if (curr->data->getName() == name) return idx;
+            curr = curr->next;
+            idx++;
         }
         return -1;
     }
+
+    // REQUIREMENT: Print/Traverse using the Iterator
+    void displayAll() {
+        ListIterator it = getIterator();
+        int idx = 0;
+        while (it.isValid()) {
+            cout << "[" << idx++ << "] " << *(it.getData()) << endl;
+            it.next();
+        }
+    }
+
+    ListIterator getIterator() { return ListIterator(head); }
+    int getSize() const { return size; }
 };
 
 // --- Updated Doctests ---
 #ifdef _DEBUG
-TEST_CASE("Assignment 9: Search and Sort Verification") {
-    DynamicArray<Participant*> da;
-    da += new SeniorStudent("Zelda", 5, Blue, "Contact1", true);
-    da += new JuniorStudent("Alice", 1, White, "Guardian1", false);
+TEST_CASE("Week 10: Linked List ADT Verification") {
+    CustomLinkedList<Participant*> list;
 
-    SUBCASE("Linear Search finds Alice at index 1") {
-        CHECK(da.sequentialSearch("Alice") == 1);
+    // 1. Test Sorted Insertion (Add in reverse/random order)
+    list.insert(new SeniorStudent("Zelda", 5, Blue, "Contact Z", true));
+    list.insert(new JuniorStudent("Alice", 1, White, "Guardian A", false));
+    list.insert(new SeniorStudent("Charlie", 3, Green, "Contact C", true));
+
+    SUBCASE("Ordered Insertion: Elements must be alphabetical by name") {
+        // Alice (A) should be first, Charlie (C) second, Zelda (Z) third
+        CHECK(list.search("Alice") == 0);
+        CHECK(list.search("Charlie") == 1);
+        CHECK(list.search("Zelda") == 2);
     }
 
-    SUBCASE("Binary Search sorts and finds Zelda") {
-        // Binary search will call bubbleSort first
-        int result = da.binarySearch("Zelda");
-        CHECK(result == 1); // After sorting: Alice[0], Zelda[1]
-        CHECK(da[0]->getName() == "Alice");
+    SUBCASE("ListIterator: Correctly traverses the sorted list") {
+        auto it = list.getIterator();
+
+        // First element should be Alice
+        REQUIRE(it.isValid());
+        CHECK(it.getData()->getName() == "Alice");
+
+        it.next(); // Advance
+        REQUIRE(it.isValid());
+        CHECK(it.getData()->getName() == "Charlie");
+
+        it.next(); // Advance
+        REQUIRE(it.isValid());
+        CHECK(it.getData()->getName() == "Zelda");
     }
 
-    SUBCASE("Search returns -1 for missing element") {
-        CHECK(da.sequentialSearch("Missing") == -1);
-        CHECK(da.binarySearch("Missing") == -1);
+    SUBCASE("Search and Removal") {
+        CHECK(list.search("Charlie") == 1);
+        list.remove(1); // Remove Charlie
+        CHECK(list.search("Charlie") == -1); // Should no longer exist
+        CHECK(list.search("Zelda") == 1);    // Zelda shifts up to index 1
     }
 }
 #endif
@@ -204,13 +237,12 @@ int main(int argc, char** argv) {
     if (context.shouldExit()) return res;
 #endif
 
-    DynamicArray<Participant*> manager;
+    CustomLinkedList<Participant*> manager;
     int choice;
 
     do {
-        cout << "\n--- Dojo Management (Week 09) ---" << endl;
-        cout << "1. Add Junior\n2. Add Senior\n3. View All\n4. Remove Student\n"
-            << "5. Linear Search\n6. Sort (Bubble)\n7. Binary Search\n8. Exit\nSelection: ";
+        cout << "\n--- Dojo Management (Week 10 - Linked List) ---" << endl;
+        cout << "1. Add Junior\n2. Add Senior\n3. View All (Iterator)\n4. Remove Student\n5. Search\n6. Exit\nSelection: ";
         cin >> choice;
 
         if (choice == 1 || choice == 2) {
@@ -221,39 +253,28 @@ int main(int argc, char** argv) {
             cout << "Gear (y/n): "; cin >> g;
             if (choice == 1) {
                 cout << "Guardian: "; cin.ignore(); getline(cin, extra);
-                manager += new JuniorStudent(name, m, (BeltRank)r, extra, (g == 'y'));
+                manager.insert(new JuniorStudent(name, m, (BeltRank)r, extra, (g == 'y')));
             }
             else {
                 cout << "Emergency: "; cin.ignore(); getline(cin, extra);
-                manager += new SeniorStudent(name, m, (BeltRank)r, extra, (g == 'y'));
+                manager.insert(new SeniorStudent(name, m, (BeltRank)r, extra, (g == 'y')));
             }
         }
         else if (choice == 3) {
-            for (int i = 0; i < manager.getSize(); i++) cout << "[" << i << "] " << *manager[i] << endl;
+            manager.displayAll();
         }
         else if (choice == 4) {
             int idx; cout << "Enter index to remove: "; cin >> idx;
-            try { manager -= idx; cout << "Student removed.\n"; }
+            try { manager.remove(idx); cout << "Removed.\n"; }
             catch (const DojoException& e) { cout << e.what() << endl; }
         }
         else if (choice == 5) {
-            string sName; cout << "Enter name to search: "; cin.ignore(); getline(cin, sName);
-            int idx = manager.sequentialSearch(sName);
+            string sName; cout << "Search name: "; cin.ignore(); getline(cin, sName);
+            int idx = manager.search(sName);
             if (idx != -1) cout << "Found at index " << idx << endl;
             else cout << "Not found.\n";
         }
-        else if (choice == 6) {
-            manager.bubbleSort();
-            cout << "List sorted alphabetically by name.\n";
-        }
-        else if (choice == 7) {
-            string sName; cout << "Enter name for binary search: "; cin.ignore(); getline(cin, sName);
-            int idx = manager.binarySearch(sName);
-            if (idx != -1) cout << "Found at index " << idx << " (List was auto-sorted)\n";
-            else cout << "Not found.\n";
-        }
-
-    } while (choice != 8);
+    } while (choice != 6);
 
     return 0;
 }
