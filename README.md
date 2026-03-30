@@ -71,3 +71,14 @@ oh no we are messing with Classes. I dont like Test_Cases. Guess this textbook w
 -Started writing notes for the diff code (3/20)
 
 -Recording time (3/22)
+
+# Assignment 10
+-Read Chap17
+
+-Took quiz 37/40
+
+-Started working on the code (night of 3/27, finished on 3/28)
+
+-Wrote notes and recorded (3/29)
+
+-Submitted 3/29
