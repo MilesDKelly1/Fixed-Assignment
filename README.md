@@ -6,6 +6,8 @@ The interest I picked for this semester was Karate, I used to be a student at Ro
 # Currently
 - Figures out if student is a kid or adult student, takes in the associated information for Junior/Senior Student, prints info based one name (want to edit to search for first and last, havent had a chance to edit this yet), removes student at index number, orders student list info alphabeltically
 
+- Working on moving everything to match what should of been the way to do the assignments, gonna add some of my "wants to do" as I go
+
 # Wanting to do
 - As mentioned above sort by first/last name
 - Check if the belt matches the months they have been a student
